@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0a0a0a"/>
+<title>Di Pietro — Sistema de Gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --black: #0a0a0a;
+    --dark: #111111;
+    --card: #181818;
+    --border: #2a2a2a;
+    --muted: #3a3a3a;
+    --text-dim: #888;
+    --text: #e8e8e8;
+    --white: #f5f5f5;
+    --apex: #c8a96e;
+    --apex-dim: #8a6f3f;
+    --taller: #e8e8e8;
+    --red: #e05555;
+    --green: #5ab87a;
+    --blue: #5a8fe0;
+    --radius: 10px;
+    --transition: 0.18s cubic-bezier(.4,0,.2,1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-size: 14px;
+  }
+
+  /* SPLASH */
+  #splash {
+    position: fixed; inset: 0;
+    background: var(--black);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+  }
+  #splash .logo-main { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 6px; color: var(--white); }
+  #splash .logo-sub { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--text-dim); margin-top: 4px; }
+  #splash .divider { width: 60px; height: 1px; background: var(--muted); margin: 20px auto; }
+  #splash .apex-tag { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 4px; color: var(--apex); }
+
+  /* NAV */
+  #nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 10px 4px 8px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-dim);
+    transition: color var(--transition);
+    font-family: 'DM Sans', sans-serif;
+    gap: 3px;
+  }
+  .nav-btn.active { color: var(--white); }
+  .nav-btn svg { width: 22px; height: 22px; }
+  .nav-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+
+  /* HEADER */
+  #header {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--dark);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 99;
+  }
+  #header .brand { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; }
+  #header .page-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+  .badge { background: var(--apex); color: var(--black); font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 20px; font-family: 'DM Mono', monospace; letter-spacing: 1px; }
+
+  /* MAIN */
+  #main {
+    padding: 80px 14px 90px;
+  }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--white); }
+  .card-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+
+  /* DASHBOARD */
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .dash-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .dash-stat.apex { border-color: var(--apex-dim); }
+  .stat-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--white); line-height: 1; }
+  .stat-value.gold { color: var(--apex); }
+  .stat-sub { font-size: 10px; color: var(--text-dim); }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px; letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin: 18px 0 8px;
+    padding-left: 2px;
+  }
+
+  /* STATUS PILLS */
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .pill-pend { background: #3a2e00; color: #d4a017; }
+  .pill-prog { background: #002040; color: var(--blue); }
+  .pill-done { background: #0d2e1a; color: var(--green); }
+  .pill-apex { background: #2a1f00; color: var(--apex); }
+
+  /* LIST ITEMS */
+  .list-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    cursor: pointer;
+    transition: border-color var(--transition);
+  }
+  .list-item:active { border-color: var(--muted); }
+  .item-name { font-weight: 600; font-size: 14px; color: var(--white); margin-bottom: 3px; }
+  .item-detail { font-size: 12px; color: var(--text-dim); }
+  .item-amount { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--white); text-align: right; }
+  .item-amount.income { color: var(--green); }
+  .item-amount.expense { color: var(--red); }
+
+  /* BUTTONS */
+  .btn-primary {
+    width: 100%;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: opacity var(--transition);
+    margin-top: 8px;
+  }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-primary.gold { background: var(--apex); }
+  .btn-secondary {
+    width: 100%;
+    background: none;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .fab {
+    position: fixed;
+    right: 18px;
+    bottom: 80px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    z-index: 98;
+    transition: transform var(--transition);
+  }
+  .fab:active { transform: scale(0.92); }
+  .fab.gold { background: var(--apex); }
+
+  /* FORMS */
+  .form-group { margin-bottom: 12px; }
+  .form-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); font-family: 'DM Mono', monospace; margin-bottom: 5px; display: block; }
+  .form-input {
+    width: 100%;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 12px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .form-input:focus { border-color: var(--muted); }
+  select.form-input option { background: var(--dark); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    width: 100%;
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    padding: 20px 18px 40px;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--muted); border-radius: 2px; margin: 0 auto 18px; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; margin-bottom: 16px; }
+
+  /* CAJA TOTALS */
+  .caja-bar {
+    display: flex; gap: 8px; margin-bottom: 14px;
+  }
+  .caja-total {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 10px;
+  }
+  .caja-total.green { border-color: #1a3d28; }
+  .caja-total.red { border-color: #3d1a1a; }
+  .caja-total-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); font-family: 'DM Mono', monospace; margin-bottom: 4px; }
+  .caja-total-val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; }
+  .caja-total.green .caja-total-val { color: var(--green); }
+  .caja-total.red .caja-total-val { color: var(--red); }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.4; }
+  .empty-text { font-size: 13px; }
+
+  /* SEARCH */
+  .search-bar {
+    position: relative; margin-bottom: 14px;
+  }
+  .search-bar input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px 10px 36px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+  .search-bar .search-icon {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim);
+  }
+
+  /* TURNOS */
+  .turno-day { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--text-dim); margin: 14px 0 6px; }
+  .turno-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px;
+  }
+  .turno-hora { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--apex); min-width: 44px; }
+  .turno-info { flex: 1; }
+  .turno-name { font-weight: 600; font-size: 13px; color: var(--white); }
+  .turno-desc { font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="logo-main">DI PIETRO</div>
+  <div class="logo-sub">MECÁNICA GENERAL</div>
+  <div class="divider"></div>
+  <div class="apex-tag">APEX DEL SABER</div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div>
+    <div class="brand" id="headerBrand">DI PIETRO</div>
+    <div class="page-title" id="headerPage">DASHBOARD</div>
+  </div>
+  <div class="badge" id="headerBadge">MGral</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div class="screen active" id="screen-dash">
+    <div class="dash-grid">
+      <div class="dash-stat">
+        <div class="stat-label">Órdenes activas</div>
+        <div class="stat-value" id="dashOrdenes">0</div>
+        <div class="stat-sub">En taller</div>
+      </div>
+      <div class="dash-stat apex">
+        <div class="stat-label">Alumnos APEX</div>
+        <div class="stat-value gold" id="dashAlumnos">0</div>
+        <div class="stat-sub">Inscriptos</div>
+      </div>
+      <div class="dash-stat">
+        <div class="stat-label">Clientes</div>
+        <div class="stat-value" id="dashClientes">0</div>
+        <div class="stat-sub">Registrados</div>
+      </div>
+      <div class="dash-stat">
+        <div class="stat-label">Turnos hoy</div>
+        <div class="stat-value" id="dashTurnos">0</div>
+        <div class="stat-sub">Programados</div>
+      </div>
+    </div>
+
+    <div class="section-title">Últimas órdenes</div>
+    <div id="dashOrdenesList"></div>
+
+    <div class="section-title">Próximos turnos</div>
+    <div id="dashTurnosList"></div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="screen" id="screen-clientes">
+    <div class="search-bar">
+      <span class="search-icon">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input type="text" placeholder="Buscar cliente..." id="searchClientes" oninput="filterClientes()"/>
+    </div>
+    <div id="clientesList"></div>
+  </div>
+
+  <!-- ÓRDENES -->
+  <div class="screen" id="screen-ordenes">
+    <div id="ordenesList"></div>
+  </div>
+
+  <!-- APEX -->
+  <div class="screen" id="screen-apex">
+    <div class="search-bar">
+      <span class="search-icon">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input type="text" placeholder="Buscar alumno..." id="searchAlumnos" oninput="filterAlumnos()"/>
+    </div>
+    <div id="alumnosList"></div>
+  </div>
+
+  <!-- CAJA -->
+  <div class="screen" id="screen-caja">
+    <div class="caja-bar">
+      <div class="caja-total green">
+        <div class="caja-total-label">Ingresos</div>
+        <div class="caja-total-val" id="totalIngresos">$0</div>
+      </div>
+      <div class="caja-total red">
+        <div class="caja-total-label">Egresos</div>
+        <div class="caja-total-val" id="totalEgresos">$0</div>
+      </div>
+      <div class="caja-total">
+        <div class="caja-total-label">Balance</div>
+        <div class="caja-total-val" id="totalBalance" style="color:var(--white)">$0</div>
+      </div>
+    </div>
+    <div id="cajaList"></div>
+  </div>
+
+  <!-- TURNOS -->
+  <div class="screen" id="screen-turnos">
+    <div id="turnosList"></div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="nav-btn active" onclick="navigate('dash',this)" data-page="DASHBOARD" data-badge="MGral">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Inicio</span>
+  </button>
+  <button class="nav-btn" onclick="navigate('clientes',this)" data-page="CLIENTES" data-badge="Taller">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="nav-label">Clientes</span>
+  </button>
+  <button class="nav-btn" onclick="navigate('ordenes',this)" data-page="ÓRDENES" data-badge="Taller">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+    <span class="nav-label">Órdenes</span>
+  </button>
+  <button class="nav-btn" onclick="navigate('apex',this)" data-page="APEX DEL SABER" data-badge="Escuela">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    <span class="nav-label">APEX</span>
+  </button>
+  <button class="nav-btn" onclick="navigate('caja',this)" data-page="CAJA" data-badge="MGral">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    <span class="nav-label">Caja</span>
+  </button>
+  <button class="nav-btn" onclick="navigate('turnos',this)" data-page="AGENDA" data-badge="MGral">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nav-label">Turnos</span>
+  </button>
+</nav>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Nuevo</div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fabBtn" onclick="openModal()">+</button>
+
+<script>
+// ========== DATA ==========
+let data = JSON.parse(localStorage.getItem('dipietro_data') || 'null') || {
+  clientes: [], ordenes: [], alumnos: [], caja: [], turnos: []
+};
+
+function save() {
+  localStorage.setItem('dipietro_data', JSON.stringify(data));
+}
+
+// ========== NAV ==========
+let currentScreen = 'dash';
+
+function navigate(screen, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  btn.classList.add('active');
+  currentScreen = screen;
+  document.getElementById('headerPage').textContent = btn.dataset.page || screen.toUpperCase();
+  document.getElementById('headerBadge').textContent = btn.dataset.badge || 'MGral';
+  renderAll();
+}
+
+// ========== RENDER ==========
+function renderAll() {
+  renderDash();
+  renderClientes();
+  renderOrdenes();
+  renderAlumnos();
+  renderCaja();
+  renderTurnos();
+}
+
+function statusPill(s) {
+  if (s === 'pendiente') return '<span class="pill pill-pend">Pendiente</span>';
+  if (s === 'en proceso') return '<span class="pill pill-prog">En proceso</span>';
+  if (s === 'terminado') return '<span class="pill pill-done">Terminado</span>';
+  return '';
+}
+
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('es-AR');
+}
+
+// DASH
+function renderDash() {
+  const activas = data.ordenes.filter(o => o.estado !== 'terminado').length;
+  document.getElementById('dashOrdenes').textContent = activas;
+  document.getElementById('dashAlumnos').textContent = data.alumnos.length;
+  document.getElementById('dashClientes').textContent = data.clientes.length;
+  const hoy = new Date().toISOString().slice(0,10);
+  const turnosHoy = data.turnos.filter(t => t.fecha === hoy).length;
+  document.getElementById('dashTurnos').textContent = turnosHoy;
+
+  const ultOrd = [...data.ordenes].reverse().slice(0,3);
+  const listOrd = document.getElementById('dashOrdenesList');
+  listOrd.innerHTML = ultOrd.length ? ultOrd.map(o => `
+    <div class="list-item" onclick="editOrden('${o.id}')">
+      <div><div class="item-name">${o.patente} — ${o.cliente}</div><div class="item-detail">${o.descripcion || 'Sin descripción'}</div></div>
+      <div style="text-align:right">${statusPill(o.estado)}</div>
+    </div>`).join('') : '<div class="empty"><div class="empty-text">Sin órdenes</div></div>';
+
+  const proxTurnos = [...data.turnos].filter(t => t.fecha >= hoy).sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora)).slice(0,3);
+  const listTur = document.getElementById('dashTurnosList');
+  listTur.innerHTML = proxTurnos.length ? proxTurnos.map(t => `
+    <div class="turno-item">
+      <div class="turno-hora">${t.hora}</div>
+      <div class="turno-info"><div class="turno-name">${t.nombre}</div><div class="turno-desc">${t.motivo} · ${t.fecha}</div></div>
+    </div>`).join('') : '<div class="empty"><div class="empty-text">Sin turnos próximos</div></div>';
+}
+
+// CLIENTES
+function renderClientes(filter='') {
+  const list = document.getElementById('clientesList');
+  const items = data.clientes.filter(c => !filter || c.nombre.toLowerCase().includes(filter) || (c.telefono||'').includes(filter));
+  list.innerHTML = items.length ? items.map(c => `
+    <div class="list-item" onclick="editCliente('${c.id}')">
+      <div><div class="item-name">${c.nombre}</div><div class="item-detail">${c.telefono || 'Sin teléfono'} · ${c.vehiculo || 'Sin vehículo'}</div></div>
+      <svg width="16" height="16" fill="none" stroke="var(--text-dim)" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    </div>`).join('') : '<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Sin clientes aún</div></div>';
+}
+function filterClientes() { renderClientes(document.getElementById('searchClientes').value.toLowerCase()); }
+
+// ORDENES
+function renderOrdenes() {
+  const list = document.getElementById('ordenesList');
+  const pend = data.ordenes.filter(o => o.estado === 'pendiente');
+  const proc = data.ordenes.filter(o => o.estado === 'en proceso');
+  const done = data.ordenes.filter(o => o.estado === 'terminado');
+
+  let html = '';
+  if (proc.length) {
+    html += '<div class="section-title">En proceso</div>';
+    html += proc.map(o => ordenCard(o)).join('');
+  }
+  if (pend.length) {
+    html += '<div class="section-title">Pendientes</div>';
+    html += pend.map(o => ordenCard(o)).join('');
+  }
+  if (done.length) {
+    html += '<div class="section-title">Terminados</div>';
+    html += done.map(o => ordenCard(o)).join('');
+  }
+  if (!data.ordenes.length) html = '<div class="empty"><div class="empty-icon">🔧</div><div class="empty-text">Sin órdenes de trabajo</div></div>';
+  list.innerHTML = html;
+}
+function ordenCard(o) {
+  return `<div class="list-item" onclick="editOrden('${o.id}')">
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+        <div class="item-name">${o.patente}</div>${statusPill(o.estado)}
+      </div>
+      <div class="item-detail">${o.cliente} · ${o.descripcion || ''}</div>
+      ${o.monto ? `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--apex);margin-top:3px">${fmt(o.monto)}</div>` : ''}
+    </div>
+    <svg width="16" height="16" fill="none" stroke="var(--text-dim)" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+  </div>`;
+}
+
+// ALUMNOS
+function renderAlumnos(filter='') {
+  const list = document.getElementById('alumnosList');
+  const items = data.alumnos.filter(a => !filter || a.nombre.toLowerCase().includes(filter));
+  list.innerHTML = items.length ? items.map(a => `
+    <div class="list-item" onclick="editAlumno('${a.id}')">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <div class="item-name">${a.nombre}</div>
+          <span class="pill pill-apex">${a.modulo || 'Básico'}</span>
+        </div>
+        <div class="item-detail">${a.telefono || ''} · ${a.fechaInicio || ''}</div>
+      </div>
+      <svg width="16" height="16" fill="none" stroke="var(--text-dim)" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    </div>`).join('') : '<div class="empty"><div class="empty-icon">🎓</div><div class="empty-text">Sin alumnos registrados</div></div>';
+}
+function filterAlumnos() { renderAlumnos(document.getElementById('searchAlumnos').value.toLowerCase()); }
+
+// CAJA
+function renderCaja() {
+  let ing = 0, egr = 0;
+  data.caja.forEach(m => { if (m.tipo === 'ingreso') ing += Number(m.monto); else egr += Number(m.monto); });
+  document.getElementById('totalIngresos').textContent = fmt(ing);
+  document.getElementById('totalEgresos').textContent = fmt(egr);
+  const bal = ing - egr;
+  const balEl = document.getElementById('totalBalance');
+  balEl.textContent = fmt(Math.abs(bal));
+  balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const list = document.getElementById('cajaList');
+  const items = [...data.caja].reverse();
+  list.innerHTML = items.length ? items.map(m => `
+    <div class="list-item">
+      <div><div class="item-name">${m.descripcion}</div><div class="item-detail">${m.fecha} · ${m.origen || 'General'}</div></div>
+      <div class="item-amount ${m.tipo === 'ingreso' ? 'income' : 'expense'}">${m.tipo === 'ingreso' ? '+' : '-'}${fmt(m.monto)}</div>
+    </div>`).join('') : '<div class="empty"><div class="empty-icon">💳</div><div class="empty-text">Sin movimientos registrados</div></div>';
+}
+
+// TURNOS
+function renderTurnos() {
+  const list = document.getElementById('turnosList');
+  if (!data.turnos.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">Sin turnos agendados</div></div>'; return; }
+  const sorted = [...data.turnos].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
+  let html = ''; let lastDate = '';
+  sorted.forEach(t => {
+    if (t.fecha !== lastDate) {
+      const d = new Date(t.fecha + 'T12:00:00');
+      html += `<div class="turno-day">${d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}).toUpperCase()}</div>`;
+      lastDate = t.fecha;
+    }
+    html += `<div class="turno-item" onclick="editTurno('${t.id}')">
+      <div class="turno-hora">${t.hora}</div>
+      <div class="turno-info"><div class="turno-name">${t.nombre}</div><div class="turno-desc">${t.motivo || ''}</div></div>
+      <span class="pill ${t.tipo === 'apex' ? 'pill-apex' : 'pill-prog'}">${t.tipo === 'apex' ? 'APEX' : 'Taller'}</span>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+// ========== MODAL ==========
+let modalMode = '';
+
+function openModal() {
+  const configs = {
+    dash: { title: 'Nueva orden', body: formOrden() },
+    clientes: { title: 'Nuevo cliente', body: formCliente() },
+    ordenes: { title: 'Nueva orden de trabajo', body: formOrden() },
+    apex: { title: 'Nuevo alumno APEX', body: formAlumno() },
+    caja: { title: 'Nuevo movimiento', body: formCaja() },
+    turnos: { title: 'Nuevo turno', body: formTurno() },
+  };
+  const cfg = configs[currentScreen] || configs.dash;
+  document.getElementById('modalTitle').textContent = cfg.title;
+  document.getElementById('modalBody').innerHTML = cfg.body;
+  document.getElementById('modal').classList.add('open');
+  modalMode = 'new';
+  document.getElementById('fabBtn').style.opacity = '0';
+}
+
+function openEditModal(title, body) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('fabBtn').style.opacity = '0';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('fabBtn').style.opacity = '1';
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+// ========== FORMS ==========
+function formCliente(c={}) {
+  return `
+    <div class="form-group"><label class="form-label">Nombre completo</label><input class="form-input" id="f_nombre" value="${c.nombre||''}" placeholder="Juan Pérez"/></div>
+    <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="f_telefono" value="${c.telefono||''}" placeholder="11 2345-6789" type="tel"/></div>
+    <div class="form-group"><label class="form-label">Vehículo</label><input class="form-input" id="f_vehiculo" value="${c.vehiculo||''}" placeholder="Fiat Palio 2018"/></div>
+    <div class="form-group"><label class="form-label">Patente</label><input class="form-input" id="f_patente" value="${c.patente||''}" placeholder="AA 123 BB"/></div>
+    <button class="btn-primary" onclick="saveCliente('${c.id||''}')">GUARDAR</button>
+    ${c.id ? `<button class="btn-secondary" onclick="deleteItem('clientes','${c.id}')">Eliminar</button>` : ''}
+  `;
+}
+
+function formOrden(o={}) {
+  const clienteOptions = data.clientes.map(c => `<option value="${c.nombre}" ${o.cliente===c.nombre?'selected':''}>${c.nombre} — ${c.vehiculo||''}</option>`).join('');
+  return `
+    <div class="form-group"><label class="form-label">Cliente</label>
+      <select class="form-input" id="f_cliente">
+        <option value="">Seleccionar cliente...</option>
+        ${clienteOptions}
+        <option value="__nuevo__">+ Ingresar manualmente</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Patente</label><input class="form-input" id="f_patente" value="${o.patente||''}" placeholder="AA 123 BB"/></div>
+    <div class="form-group"><label class="form-label">Descripción del trabajo</label><input class="form-input" id="f_desc" value="${o.descripcion||''}" placeholder="Cambio de aceite, frenos..."/></div>
+    <div class="form-group"><label class="form-label">Estado</label>
+      <select class="form-input" id="f_estado">
+        <option value="pendiente" ${o.estado==='pendiente'?'selected':''}>Pendiente</option>
+        <option value="en proceso" ${o.estado==='en proceso'?'selected':''}>En proceso</option>
+        <option value="terminado" ${o.estado==='terminado'?'selected':''}>Terminado</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Monto ($)</label><input class="form-input" id="f_monto" value="${o.monto||''}" placeholder="15000" type="number"/></div>
+    <button class="btn-primary" onclick="saveOrden('${o.id||''}')">GUARDAR</button>
+    ${o.id ? `<button class="btn-secondary" onclick="deleteItem('ordenes','${o.id}')">Eliminar</button>` : ''}
+  `;
+}
+
+function formAlumno(a={}) {
+  return `
+    <div class="form-group"><label class="form-label">Nombre completo</label><input class="form-input" id="f_nombre" value="${a.nombre||''}" placeholder="Juan Pérez"/></div>
+    <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="f_telefono" value="${a.telefono||''}" placeholder="11 2345-6789" type="tel"/></div>
+    <div class="form-group"><label class="form-label">Módulo</label>
+      <select class="form-input" id="f_modulo">
+        <option value="Básico" ${(a.modulo||'Básico')==='Básico'?'selected':''}>Básico</option>
+        <option value="Intermedio" ${a.modulo==='Intermedio'?'selected':''}>Intermedio</option>
+        <option value="Avanzado" ${a.modulo==='Avanzado'?'selected':''}>Avanzado</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Fecha de inicio</label><input class="form-input" id="f_fecha" value="${a.fechaInicio||''}" type="date"/></div>
+    <div class="form-group"><label class="form-label">Notas</label><input class="form-input" id="f_notas" value="${a.notas||''}" placeholder="Notas adicionales..."/></div>
+    <button class="btn-primary gold" onclick="saveAlumno('${a.id||''}')">GUARDAR ALUMNO</button>
+    ${a.id ? `<button class="btn-secondary" onclick="deleteItem('alumnos','${a.id}')">Eliminar</button>` : ''}
+  `;
+}
+
+function formCaja(m={}) {
+  return `
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-input" id="f_tipo">
+        <option value="ingreso" ${m.tipo==='ingreso'?'selected':''}>Ingreso</option>
+        <option value="egreso" ${m.tipo==='egreso'?'selected':''}>Egreso</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Descripción</label><input class="form-input" id="f_desc" value="${m.descripcion||''}" placeholder="Pago servicio, compra aceite..."/></div>
+    <div class="form-group"><label class="form-label">Monto ($)</label><input class="form-input" id="f_monto" value="${m.monto||''}" placeholder="5000" type="number"/></div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="f_fecha" value="${m.fecha||new Date().toISOString().slice(0,10)}" type="date"/></div>
+    <div class="form-group"><label class="form-label">Origen</label>
+      <select class="form-input" id="f_origen">
+        <option value="Taller" ${(m.origen||'Taller')==='Taller'?'selected':''}>Taller</option>
+        <option value="APEX" ${m.origen==='APEX'?'selected':''}>APEX del Saber</option>
+        <option value="General" ${m.origen==='General'?'selected':''}>General</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveCaja('${m.id||''}')">GUARDAR</button>
+    ${m.id ? `<button class="btn-secondary" onclick="deleteItem('caja','${m.id}')">Eliminar</button>` : ''}
+  `;
+}
+
+function formTurno(t={}) {
+  return `
+    <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="f_nombre" value="${t.nombre||''}" placeholder="Juan Pérez"/></div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="f_fecha" value="${t.fecha||new Date().toISOString().slice(0,10)}" type="date"/></div>
+    <div class="form-group"><label class="form-label">Hora</label><input class="form-input" id="f_hora" value="${t.hora||''}" type="time"/></div>
+    <div class="form-group"><label class="form-label">Motivo</label><input class="form-input" id="f_motivo" value="${t.motivo||''}" placeholder="Revisión, cambio de aceite..."/></div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-input" id="f_tipo">
+        <option value="taller" ${(t.tipo||'taller')==='taller'?'selected':''}>Taller</option>
+        <option value="apex" ${t.tipo==='apex'?'selected':''}>APEX del Saber</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveTurno('${t.id||''}')">GUARDAR TURNO</button>
+    ${t.id ? `<button class="btn-secondary" onclick="deleteItem('turnos','${t.id}')">Eliminar</button>` : ''}
+  `;
+}
+
+// ========== SAVE ==========
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function v(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function saveCliente(id) {
+  if (!v('f_nombre')) return alert('Ingresá un nombre');
+  const obj = { id: id||uid(), nombre: v('f_nombre'), telefono: v('f_telefono'), vehiculo: v('f_vehiculo'), patente: v('f_patente') };
+  if (id) { const i = data.clientes.findIndex(c=>c.id===id); data.clientes[i]=obj; } else data.clientes.push(obj);
+  save(); renderAll(); closeModal();
+}
+
+function saveOrden(id) {
+  if (!v('f_patente')) return alert('Ingresá la patente');
+  const obj = { id: id||uid(), cliente: v('f_cliente'), patente: v('f_patente'), descripcion: v('f_desc'), estado: v('f_estado'), monto: v('f_monto') };
+  if (id) { const i = data.ordenes.findIndex(o=>o.id===id); data.ordenes[i]=obj; } else data.ordenes.push(obj);
+  save(); renderAll(); closeModal();
+}
+
+function saveAlumno(id) {
+  if (!v('f_nombre')) return alert('Ingresá el nombre');
+  const obj = { id: id||uid(), nombre: v('f_nombre'), telefono: v('f_telefono'), modulo: v('f_modulo'), fechaInicio: v('f_fecha'), notas: v('f_notas') };
+  if (id) { const i = data.alumnos.findIndex(a=>a.id===id); data.alumnos[i]=obj; } else data.alumnos.push(obj);
+  save(); renderAll(); closeModal();
+}
+
+function saveCaja(id) {
+  if (!v('f_monto') || !v('f_desc')) return alert('Completá descripción y monto');
+  const obj = { id: id||uid(), tipo: v('f_tipo'), descripcion: v('f_desc'), monto: v('f_monto'), fecha: v('f_fecha'), origen: v('f_origen') };
+  if (id) { const i = data.caja.findIndex(m=>m.id===id); data.caja[i]=obj; } else data.caja.push(obj);
+  save(); renderAll(); closeModal();
+}
+
+function saveTurno(id) {
+  if (!v('f_nombre') || !v('f_fecha') || !v('f_hora')) return alert('Completá nombre, fecha y hora');
+  const obj = { id: id||uid(), nombre: v('f_nombre'), fecha: v('f_fecha'), hora: v('f_hora'), motivo: v('f_motivo'), tipo: v('f_tipo') };
+  if (id) { const i = data.turnos.findIndex(t=>t.id===id); data.turnos[i]=obj; } else data.turnos.push(obj);
+  save(); renderAll(); closeModal();
+}
+
+function deleteItem(col, id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  data[col] = data[col].filter(i => i.id !== id);
+  save(); renderAll(); closeModal();
+}
+
+// ========== EDIT ==========
+function editCliente(id) { const c = data.clientes.find(x=>x.id===id); openEditModal('Editar cliente', formCliente(c)); }
+function editOrden(id) { const o = data.ordenes.find(x=>x.id===id); openEditModal('Editar orden', formOrden(o)); }
+function editAlumno(id) { const a = data.alumnos.find(x=>x.id===id); openEditModal('Editar alumno', formAlumno(a)); }
+function editTurno(id) { const t = data.turnos.find(x=>x.id===id); openEditModal('Editar turno', formTurno(t)); }
+
+// ========== INIT ==========
+setTimeout(() => {
+  document.getElementById('splash').style.opacity = '0';
+  setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 500);
+}, 1800);
+
+renderAll();
+</script>
+</body>
+</html>
